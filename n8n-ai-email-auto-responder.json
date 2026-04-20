@@ -1,0 +1,350 @@
+{
+  "name": "n8n-smart-email-responder",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "includeSpamTrash": false,
+          "includeDrafts": false,
+          "readStatus": "unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -336,
+        0
+      ],
+      "id": "44e73036-14b6-4b3c-b9e4-05d2092a3957",
+      "name": "Gmail Trigger",
+      "executeOnce": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bgXZb12usFl7gBLo",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "ac7dc037-9bba-4e7e-9777-bebb82236885",
+      "name": "Wait",
+      "webhookId": "7c31502c-4970-43f3-bcb0-56f73d8ceb73"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f516a752-13c3-4b78-946c-f3e15a94f7a8",
+              "leftValue": "={{ $json.From }}",
+              "rightValue": "tyagisakshama441@gmail.com",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "889009a7-43bf-41f7-8db6-ed10d417110f",
+              "leftValue": "={{ $json.snippet }}",
+              "rightValue": "=unsubcribe",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -128,
+        0
+      ],
+      "id": "3dca8110-ee95-4862-8614-5e15e154f018",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        288,
+        208
+      ],
+      "id": "41373f5c-8054-4425-a840-51a9f254b4bf",
+      "placeholder": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        80,
+        0
+      ],
+      "id": "bf7dc049-a216-487f-b5da-e49f5f1bc6e0",
+      "name": "to protect rate limit"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        464
+      ],
+      "id": "50ce7af1-8bab-4f30-894e-0ff565108bb7",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-lite",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-lite"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "\"You are an email classifier. Categorize the following email into exactly one of these labels: [JOB_APPLICATION, SPAM, PERSONAL, NEWSLETTER]. Respond with ONLY the label name.\""
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "3ba30c2c-52ad-455f-832b-815163129eac",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "QQWZlgIz9mGS3RUO",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "tyagisaksham441@gmail.com",
+        "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "emailType": "text",
+        "message": "job gmail found.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1136,
+        -32
+      ],
+      "id": "10db9095-5f25-49f5-9123-bf8ca50c1432",
+      "name": "Send a message",
+      "webhookId": "e0ab7476-fc24-49ac-9163-a56bed9f3a6b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bgXZb12usFl7gBLo",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f1867462-e527-40d1-b13c-7ad8b57c9c44",
+              "leftValue": "={{ $json.content.parts[0].text }}",
+              "rightValue": "job",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        0
+      ],
+      "id": "a73432c3-14e4-4959-817d-2c5d28e76c72",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        160
+      ],
+      "id": "01ef5dc5-592a-40bb-9ac2-31eead79fd81",
+      "name": "Mark a message as read",
+      "webhookId": "de383798-4dac-4980-bbe5-9d253a061624",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bgXZb12usFl7gBLo",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "to protect rate limit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "to protect rate limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "to protect rate limit": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark a message as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "12ad990e-589d-4b9e-b763-0e97e7b7a08a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "099e369a068704a5e2bb1d4cd26f65395c5b7bb34ed4f97b6d340bb5297fdd44"
+  },
+  "id": "G6oFpp1jPscZuzAq",
+  "tags": []
+}
