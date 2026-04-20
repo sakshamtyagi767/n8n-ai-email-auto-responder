@@ -31,7 +31,7 @@ Gmail Trigger → IF → SplitInBatches → Wait → AI → Gmail Send
 ---
 
 ## 📸 Screenshot
-workflow.png
+![Workflow Screenshot](workflow.png)
 
 ---
 
